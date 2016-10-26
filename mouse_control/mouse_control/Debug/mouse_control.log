@@ -1,0 +1,2 @@
+﻿  Source.cpp
+d:\visual studio 2015\projects\mouse_control\mouse_control\source.cpp(4): fatal error C1083: 無法開啟包含檔案: 'Kinect.h': No such file or directory
