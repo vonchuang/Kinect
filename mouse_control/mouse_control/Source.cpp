@@ -128,13 +128,22 @@ int	main(void)
 
 				bool	leftHand = false;						//用来判断最高的手指是左手还是右手
 
+				const Joint& rightHandDepth = jointArray[JointType_HandRight];
+				const Joint& rightShoulderDepth = jointArray[JointType_ShoulderRight];
+				const Joint& leftHandDepth = jointArray[JointType_HandLeft];
+				const Joint& leftShoulderDepth = jointArray[JointType_ShoulderLeft];
+				float rightdepth = rightShoulderDepth.Position.Z - rightHandDepth.Position.Z;
+				float leftdepth = leftShoulderDepth.Position.Z - leftHandDepth.Position.Z;
+				std::cout << rightdepth << " " << leftdepth << endl;
 																//开始检测右手
 				DepthSpacePoint		highestPoint = { depthWidth - 1,depthHeight - 1 };
 				if (jointArray[JointType_HandRight].TrackingState == TrackingState_Tracked)
 				{
 					CameraSpacePoint	cameraHandRight = jointArray[JointType_HandRight].Position;
-					DepthSpacePoint		depthHandRight;
+//					CameraSpacePoint	cameraShoulderRight = jointArray[JointType_ShoulderRight].Position;
+					DepthSpacePoint		depthHandRight, ShoulderRight;
 					myMapper->MapCameraPointToDepthSpace(cameraHandRight, &depthHandRight);
+	//				myMapper->MapCameraPointToDepthSpace(cameraShoulderRight, &depthHandRight);
 
 					for (int i = depthHandRight.Y; i > depthHandRight.Y - HAND_UP; i--)
 						for (int j = depthHandRight.X - HAND_LEFT_RIGHT; j < depthHandRight.X + HAND_LEFT_RIGHT; j++)	//确定要检查的范围
@@ -252,17 +261,25 @@ int	main(void)
 					if (SUCCEEDED(hResult)) {
 						int x = static_cast<int>(colorSpacePoint.X);
 						int y = static_cast<int>(colorSpacePoint.Y);
-							if (leftHandState == HandState::HandState_Open) {
-								circle(img, cv::Point(x,y), 5, COLOR_TABLE[RED], -1, 0, 0);
-								mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);	
+							if (rightdepth > 0.25) {
+								circle(img, cv::Point(x, y), 20, COLOR_TABLE[RED], -1, 0, 0);
+								mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
 							}
-							if (leftHandState == HandState::HandState_Closed) {
-								circle(img, cv::Point(x, y), 5, COLOR_TABLE[WHITE], -1, 0, 0);
+							else {
+								circle(img, cv::Point(x, y), 5, COLOR_TABLE[RED], -1, 0, 0);
 								mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
 							}
-						
+							if (leftdepth > 0.25) {
+								circle(img, cv::Point(x, y), 5, COLOR_TABLE[RED], -1, 0, 0);
+								mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTDOWN, 0, 0, 0, 0);
+							}
+							else {
+								circle(img, cv::Point(x, y), 5, COLOR_TABLE[RED], -1, 0, 0);
+								mouse_event(MOUSEEVENTF_ABSOLUTE | MOUSEEVENTF_LEFTUP, 0, 0, 0, 0);
+							}
 					}
 				}
+				
 
 				bool	control = true;
 				if (check_new_point(front, highestPoint, depthHeight, depthWidth))	//让鼠标碰到边缘就停止，不反弹
